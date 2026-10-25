@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cruisin Stash - Einde Shift 🔧</title>
+    <style>
+        :root {
+            --primary: #ffcc00;
+            --dark-bg: #0a0a0b; 
+            --card-bg: #111114;
+            --input-bg: #16161a;
+            --text: #ffffff;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--dark-bg);
+            color: var(--text); 
+            padding: 20px 10px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .container { 
+            max-width: 800px; 
+            width: 100%; 
+            background-color: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 2px solid #222;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.7); 
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+        
+        h1 { 
+            margin: 5px 0 5px 0; 
+            font-size: 24px; 
+            text-align: center; 
+            color: var(--primary); 
+            font-weight: 900; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .stock-table th {
+            color: var(--primary);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-align: left;
+            padding: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .stock-table td {
+            padding: 6px 8px;
+            font-size: 13px;
+            border-bottom: 1px solid #1f1f23;
+            vertical-align: middle;
+        }
+
+        .stock-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        input[type="number"] { 
+            width: 75px; 
+            height: 26px;
+            border: 1px solid #3f3f46; 
+            background: var(--input-bg); 
+            color: #fff; 
+            border-radius: 4px; 
+            text-align: center; 
+            font-size: 13px; 
+            font-family: monospace;
+        }
+
+        input[type="number"]:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+        }
+
+        .val-diff {
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .text-danger { color: var(--danger); }
+        .text-success { color: var(--success); }
+
+        .btn-box-reset {
+            display: block;
+            width: 100%;
+            padding: 10px; 
+            background: transparent;
+            border: 1px dashed var(--primary);
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .btn-box-reset:hover {
+            background: var(--primary);
+            color: #000;
+        }
+        
+        .footer-text { 
+            margin-top: 15px; 
+            font-size: 10px; 
+            color: #52525b; 
+            text-align: center; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>CRUISIN STASH</h1>
+    <div class="subtitle">Einde Shift Overzicht (Gewenste basis vs. Huidig)</div>
+    
+    <table class="stock-table">
+        <thead>
+            <tr>
+                <th>Item Naam</th>
+                <th>Basis Stock</th>
+                <th>Huidige Stock</th>
+                <th>Verschil</th>
+            </tr>
+        </thead>
+        <tbody id="stockRows">
+            <!-- Geladen via JS -->
+        </tbody>
+    </table>
+
+    <!-- Knop die puur de huidige stock leegmaakt naar 0 -->
+    <button class="btn-box-reset" onclick="resetHuidigeStock()">🔄 Huidige stock resetten (Zet op 0)</button>
+    
+    <div class="footer-text">Cruisin Stash Tool • Altijd up-to-date</div>
+</div>
+
+<script>
+    // Exacte data en stockwaarden overgenomen uit jouw overzicht
+    const stashItems = [
+        { id: "helmen", name: "Helmen", base: 5, current: 5 },
+        { id: "air_repair", name: "Air Repair Kits", base: 8, current: 0 },
+        { id: "repair_kits", name: "Repair Kits", base: 250, current: 208 },
+        { id: "perf_parts", name: "Performance Parts", base: 250, current: 199 },
+        { id: "respray", name: "Respray Kit", base: 250, current: 205 },
+        { id: "cosmetic", name: "Cosmetic Parts", base: 250, current: 151 },
+        { id: "wheel_kit", name: "Vehicle Wheel Kit", base: 250, current: 240 },
+        { id: "smoke_kit", name: "Smoke Kit", base: 250, current: 256 },
+        { id: "extra_kit", name: "Extra Kit", base: 250, current: 381 },
+        { id: "lighting", name: "Lighting Controller", base: 250, current: 210 },
+        { id: "ceramic", name: "Ceramic Brakes", base: 250, current: 250 },
+        { id: "slick", name: "Slick Tyres", base: 250, current: 199 },
+        { id: "semi_slick", name: "Semi Slick Tyres", base: 250, current: 306 },
+        { id: "offroad", name: "Ofroad Slick Tyres", base: 250, current: 263 },
+        { id: "clutch", name: "Clutch Replacement", base: 250, current: 253 },
+        { id: "air_filter", name: "Air Filter", base: 250, current: 266 },
+        { id: "engine_oil", name: "Enigine Oil", base: 250, current: 202 },
+        { id: "suspension", name: "Suspension Parts", base: 250, current: 203 },
+        { id: "tyre_rep", name: "Tyre Replacment", base: 250, current: 218 },
+        { id: "brakepad", name: "Brakepad Replacement", base: 250, current: 218 },
+        { id: "spark_plug", name: "Spark Plug", base: 250, current: 218 },
+        { id: "ev_battery", name: "Ev Battery", base: 100, current: 145 },
+        { id: "ev_motor", name: "Ev Motor", base: 100, current: 109 },
+        { id: "ev_cooling", name: "Ev Cooling", base: 100, current: 119 },
+        { id: "race_harnas", name: "Race Harnas", base: 100, current: 259 },
+        { id: "nitro_inst", name: "Nitro Instal Kit", base: 50, current: 152 },
+        { id: "nitro_bot", name: "Nitro Bottle", base: 50, current: 276 },
+        { id: "drift_tune", name: "Drift Tuning Kit", base: 50, current: 138 },
+        { id: "cleaning", name: "Cleaning Kit", base: 50, current: 19 }
+    ];
+
+    const tbody = document.getElementById("stockRows");
+
+    function bouwTabel() {
+        tbody.innerHTML = "";
+        stashItems.forEach(item => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${item.name}</strong></td>
+                <td>${item.base}</td>
+                <td>
+                    <input type="number" id="input-${item.id}" value="${item.current}" min="0" oninput="berekenVerschil('${item.id}', ${item.base})">
+                </td>
+                <td id="diff-${item.id}" class="val-diff">0</td>
+            `;
+            tbody.appendChild(tr);
+            berekenVerschil(item.id, item.base);
+        });
+    }
+
+    function berekenVerschil(id, base) {
+        const input = document.getElementById(`input-${id}`);
+        const diffCell = document.getElementById(`diff-${id}`);
+        if (!input || !diffCell) return;
+
+        const huidig = parseInt(input.value) || 0;
+        const verschil = huidig - base;
+
+        if (verschil < 0) {
+            diffCell.innerText = verschil + ",00";
+            diffCell.className = "val-diff text-danger"; 
+        } else if (verschil > 0) {
+            diffCell.innerText = "+" + verschil + ",00";
+            diffCell.className = "val-diff text-success"; 
+        } else {
+            diffCell.innerText = "0,00";
+            diffCell.className = "val-diff";
+        }
+    }
+
+    // Zet enkel alle invoervelden van de huidige stock op 0
+    function resetHuidigeStock() {
+        stashItems.forEach(item => {
+            const input = document.getElementById(`input-${item.id}`);
+            if (input) {
+                input.value = 0;
+            }
+            berekenVerschil(item.id, item.base);
+        });
+    }
+
+    bouwTabel();
+</script>
+</body>
+</html>

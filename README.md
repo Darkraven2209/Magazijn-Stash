@@ -1,1 +1,1 @@
-# Magazijn-Stash-Berekentool
+# Magazijn-Stash
